@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
-import { API_URL, API_KEY, IMAGE_BASE_URL, POSTER_SIZE, BACKDROP_SIZE} from '../../config';
-import HeroImage from '../elements/HeroImage/HeroImage';
-import SearchBar from '../elements/SearchBar/SearchBar';
-import FourColGrid from '../elements/FourColGrid/FourColGrid';
-import MovieThumb from '../elements/MovieThumb/MovieThumb';
-import LoadMoreBtn from '../elements/LoadMoreBtn/LoadMoreBtn';
-import Spinner from '../elements/Spinner/Spinner';
+import { API_URL, API_KEY, IMAGE_BASE_URL, POSTER_SIZE, BACKDROP_SIZE} from '../../../config';
+import HeroImage from '../HeroImage';
+import SearchBar from '../SearchBar';
+import FourColGrid from '../FourColGrid';
+import MovieThumb from '../MovieThumb';
+import LoadMoreBtn from '../LoadMoreBtn';
+import Spinner from '../Spinner';
 import './Home.css';
 import _ from 'lodash';
 
@@ -14,9 +14,8 @@ class Home extends Component {
      movies: [],
      heroImage: null, 
      loading: false,
-     currentPage: 0, 
      totalPages: 0, 
-     searchTerm: ''
+     searchTerm: '', 
  }
 
 componentDidMount(){

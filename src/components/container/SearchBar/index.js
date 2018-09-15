@@ -1,40 +1,20 @@
-import React, { Component } from 'react';
+import React from 'react';
 import FontAwesome from 'react-fontawesome';
 import './SearchBar.css'
 
-class SearchBar extends Component {
-    state = {
-            value: ''
-    }
-
-    timeout= null;
-
-    doSearch = (event) => {
-    this.setState({ value: event.target.value })
-    clearTimeout(this.timeout);
-
-    this.timeout = setTimeout( ()  => {
-        this.props.callback(this.state.value);
-    }, 500);
-   
-    }
-    render(){
-        return(
+const SearchBar = ({ handleSearch }) => (
             <div className="rmdb-searchbar">
-            <div classname="rmdb-searchbar-content">
-            <FontAwesome className="rmdb-fa-search" name="search" size="2x" />
-            <input
-            type="text"
-            className="rmdb-searchbar-input"
-            placeholder="Search"
-            onChange={this.doSearch}
-            value={this.state.value}
-            />
+                <div className="rmdb-searchbar-content">
+                    <FontAwesome className="rmdb-fa-search" name="search" size="2x" />
+                    <input
+                        name='searchText'
+                        type="text"
+                        className="rmdb-searchbar-input"
+                        placeholder="Search"
+                        onChange={(e) => handleSearch(e.target.value)}
+                    />
+                </div>
             </div>
-            
-            </div>
-        )
-    }
-}
+)
 
-export default SearchBar;
+export default SearchBar

@@ -19,7 +19,6 @@ const HeroImage = (props) => {
     <p>{props.text}</p>
     </div>
     </div>
-    HeroImage
     </div>
     )
 }

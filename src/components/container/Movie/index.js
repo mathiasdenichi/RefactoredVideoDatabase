@@ -1,13 +1,14 @@
 import React, { Component } from 'react'; 
+import axios from 'axios'
 import { API_URL, API_KEY } from '../../../config';
 import Navigation from '../Navigation';
-import MovieInfo from '../MovieInfo';
-import MovieInfoBar from '../MovieInfoBar';
+import MovieInfo from './MovieInfoBar';
+import MovieInfoBar from './MovieInfoBar';
 import FourColGrid from '../FourColGrid';
 import Actor from '../Actor';
 import Spinner from '../Spinner';
 import _ from 'lodash';
-import './Movie.css';
+import './styles/Movie.css';
 
 class Movie extends Component {
     state = {
@@ -15,54 +16,19 @@ class Movie extends Component {
         actors: null,
         directors: [],
         loading: false 
-        }
-        componentDidMount() {
-            if (localStorage.getItem(`${this.props.match.params.movieId}`)) {
-            const state = JSON.parse(localStorage.getItem(`${this.props.match.params.movieId}`));
-            this.setState({ ...state });
-            this.setState({ loading: true });
-        } else {
-            // First fetch the movie ...
-            const endpoint = `${API_URL}movie/${this.props.match.params.movieId}?api_key=${API_KEY}&language=en-US`;
-            this.fetchItems(endpoint);
-        }
     }
-        fetchItems = (endpoint) => {
-            fetch(endpoint)
-            .then(result => result.json()) 
-            .then(result => {
-                
-                if (result.status_code) {
-                    this.setState({ loading : false});
-                } else {
-                    this.setState({ movie:result }, () => {
-                 
-                       // ... then fetch actor in the setState callback funtion
-                       const endpoint = `${API_URL}/movie/${this.props.match.params.movieId}/credits?api_key=${API_KEY}`
-                       fetch(endpoint)
-                       .then(result => result.json())
-                       .then(result => {
-
-                           console.log(result)
-                          
-                        const {crew} = result 
-                        const directors = _.filter(crew, (member) => member.job === "director" ) 
-                           this.setState({
-                               actors: result.cast, 
-                               directors,
-                               loading: false
-                           }, () => {
-                               localStorage.setItem(`${this.props.match.params.movieId}`, JSON.stringify(this.state));
-
-                           })
-                        
-
-                       })
-                    })
-                }
-            })
-
-            .catch(error => console.error('Error:', error))
+        
+    componentDidMount() {
+        this.fetchItems()
+    }
+        fetchItems = async () => {
+            try{
+                const res = await axios.get(`${API_URL}/movie/${this.props.match.params.movieId}/credits?api_key=${API_KEY}`)
+                const { data } = await res
+                return console.log(data)
+            } catch (err) {
+                return console.log(err)
+            }           
         }
 
     render() {

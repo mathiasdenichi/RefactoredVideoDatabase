@@ -7,16 +7,14 @@ import NotFound from '../NotFound';
 const App = () => {
     return (
       <BrowserRouter>
-      <React.Fragment>
-      <Header />
-      <Switch>
-      <Route path="/" component={Home} exact />
-      <Route path="/:movieId" component={Movie} exact/>
-      <Route component={NotFound} />
-      </Switch>
-
-      </React.Fragment>
-
+        <React.Fragment>
+            <Header />
+            <Switch>
+              <Route path="/" component={Home} exact />
+              <Route path="/:movieId" component={Movie} exact/>
+              <Route component={NotFound} />
+            </Switch>
+        </React.Fragment>
       </BrowserRouter> 
     )
 }

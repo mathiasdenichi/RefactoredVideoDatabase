@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
+import axios from 'axios'
 import { API_URL, API_KEY, IMAGE_BASE_URL, POSTER_SIZE, BACKDROP_SIZE} from '../../../config';
 import HeroImage from '../HeroImage';
 import SearchBar from '../SearchBar';
 import FourColGrid from '../FourColGrid';
-import MovieThumb from '../MovieThumb';
+import MovieThumb from '../Movie/MovieThumb';
 import LoadMoreBtn from '../LoadMoreBtn';
 import Spinner from '../Spinner';
 import './Home.css';
@@ -16,103 +17,117 @@ class Home extends Component {
      loading: false,
      totalPages: 0, 
      searchTerm: '', 
+     currentPage: undefined,
  }
 
 componentDidMount(){
-    if(localStorage.getItem('HomeState')) {
-const state =JSON.parse(localStorage.getItem('HomeState'));
-this.setState({...state});
-    } else {
-
-    }
-    this.setState({ loading: true});
-    const endpoint = `${API_URL}movie/popular?api_key=${API_KEY}&language=en-US&page=1`;
-    this.fetchItems(endpoint);
+    this.fetchItems();
 }
 
-searchItems = (searchTerm) => {
-    console.log(searchTerm);
-    let endpoint = '';
-    this.setState({
-        movies: [],
-        loading: true, 
-        searchTerm
-    })
-
-    if(searchTerm === '') {
-        endpoint = `${API_URL}movie/popular?api_key=${API_KEY}&language=en-US&page=1`;
-    } else {
-        endpoint = `${API_URL}search/movie?api_key=${API_KEY}&language=en-US&query=${searchTerm}`;
-    }
-    this.fetchItems(endpoint);
+handleSearch = (value) => {
+  this.searchItems(value)
 }
-
-loadMoreItems = () => {
-    let endpoint = '';
-    this.setState({ loading: true });
-
-    if (this.state.searchTerm === '') {
-        endpoint = `${API_URL}movie/popular?api_key=${API_KEY}&language=en-US&page=${this.state.currentPage + 1}`;
-    } else {
-        endpoint = `${API_URL}search/movie?api_key=${API_KEY}&language=en-US&query${this.state.searchTerm}&page=${this.state.currentPage + 1}`;
-    }
-    this.fetchItems(endpoint);
-}
-
-
-fetchItems= (endpoint) => {
-    fetch(endpoint)
-    .then(result => result.json())
-    .then(result => {
+searchItems = async (value) => {
+    if(value){
         this.setState({
-            movies: [...this.state.movies, ...result.results],
-            heroImage: this.state.heroImage || result.results[0],
-            loading: false, 
-            currentPage: result.page,
-            totalPages: result.total_pages
-        },   ()=> {
-            localStorage.setItem('HomeState', JSON.stringify(this.state));
+            movies: [],
+            loading: true, 
         })
-    })
+        try{
+            const res = await axios.get(`${API_URL}search/movie?api_key=${API_KEY}&language=en-US&query=${value}`)
+            const { data } = await res
+            return this.setState({
+                movies: data.results,
+                loading: false,
+            })
+        } catch(err) {
+                return console.log(err)
+        } 
+    } else {
+        try{
+            const res = await axios.get(`${API_URL}movie/popular?api_key=${API_KEY}&language=en-US&page=1`)
+            const { data } = await res
+            return this.setState({
+                movies: data.results,
+                heroImage: data.results[0],
+                currentPage: data.page,
+            })
+        } catch(err) {
+            return console.log(err)
+        }
+    }   
 }
+
+loadMoreItems = async () => {
+    const { currentPage, movies, searchTerm } = this.state
+    this.setState({ loading: true });
+        try{
+                const res = await axios.get(`${API_URL}movie/popular?api_key=${API_KEY}&language=en-US&page=${currentPage + 1}`)
+                const { data } = await res
+                console.log(data.page)
+                return this.setState({
+                    movies: [...movies , ...data.results],
+                    heroImage: data.results[0],
+                    currentPage: currentPage + 1,
+                    loading: false,
+                })
+        } catch(err) {
+                return console.log(err)
+        } 
+}
+
+
+fetchItems = async () => {
+    try{
+        const res = await axios.get(`${API_URL}movie/popular?api_key=${API_KEY}&language=en-US&page=1`)
+        const { data } = await res
+        console.log(data.page)
+        return this.setState({
+            movies: data.results,
+            heroImage: data.results[0],
+            currentPage: data.page,
+        })
+    } catch(err) {
+        return console.log(err)
+    }
+}
+
+
 
  render() {
+     const { movies, heroImage, searchTerm } = this.state
+     console.log(searchTerm)
  return (
     <div className="rmdb-home">
-    {this.state.heroImage ?
+    {heroImage ?
     <div>
-    <HeroImage 
-    image={`${IMAGE_BASE_URL}${BACKDROP_SIZE}${this.state.heroImage.backdrop_path}`}
-    title={this.state.heroImage.original_title}
-    text={this.state.heroImage.overview}
-    />
-    <SearchBar callback={this.searchItems} />
-    </div> : null }
+        <HeroImage 
+            image={`${IMAGE_BASE_URL}${BACKDROP_SIZE}${heroImage.backdrop_path}`}
+            title={heroImage.original_title}
+            text={heroImage.overview}
+        />
+        <SearchBar handleSearch={this.handleSearch} />
+    </div> 
+    : null }
     <div className="rmdb-home-grid">
     <FourColGrid
-    header={this.state.searchTerm ? 'Search Result' : 'Popular Movies'}
-    loading={this.state.loading}
+        header={this.state.searchTerm ? 'Search Result' : 'Popular Movies'}
+        loading={this.state.loading}
    >
-    {_.map(this.state.movies,(element) => {
-        return <MovieThumb
-        key={element.id}
-        clickable={true}
-        image={element.poster_path ? `${IMAGE_BASE_URL}${POSTER_SIZE}${element.poster_path}` : './images/no_image.jpg'}
-        movieId={element.id}
-        movieName={element.original_title}
-        />
-        
-        
-    
-    })}
+    {_.map(movies, (element) => (
+        <MovieThumb
+                key={element.id}
+                clickable={true}
+                image={element.poster_path ? `${IMAGE_BASE_URL}${POSTER_SIZE}${element.poster_path}` : './images/no_image.jpg'}
+                movieId={element.id}
+                movieName={element.original_title}
+        />))}
     </FourColGrid>
     {this.state.loading ? <Spinner /> : null}
-    {(this.state.currentPage <= this.state.totalPages && !this.state.loading) ?
-    <LoadMoreBtn text="Load More" onClick={this.loadMoreItems} />
-    : null}
+     <LoadMoreBtn text="Load More" onClick={this.loadMoreItems} />
+
    </div>
-    
-    
+
     </div>
     
     )

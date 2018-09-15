@@ -4,11 +4,13 @@ import { API_URL, API_KEY, IMAGE_BASE_URL, POSTER_SIZE, BACKDROP_SIZE} from '../
 import HeroImage from '../HeroImage';
 import SearchBar from '../SearchBar';
 import FourColGrid from '../FourColGrid';
-import MovieThumb from '../Movie/MovieThumb';
 import LoadMoreBtn from '../LoadMoreBtn';
 import Spinner from '../Spinner';
 import './Home.css';
 import _ from 'lodash';
+import { Link } from 'react-router-dom';
+import '../Movie/styles/MovieThumb.css';
+import { DialogContainer } from 'react-md'
 
 class Home extends Component {
  state = {
@@ -16,8 +18,8 @@ class Home extends Component {
      heroImage: null, 
      loading: false,
      totalPages: 0, 
-     searchTerm: '', 
      currentPage: undefined,
+     currentMovie: {},
  }
 
 componentDidMount(){
@@ -27,6 +29,8 @@ componentDidMount(){
 handleSearch = (value) => {
   this.searchItems(value)
 }
+
+
 searchItems = async (value) => {
     if(value){
         this.setState({
@@ -59,7 +63,7 @@ searchItems = async (value) => {
 }
 
 loadMoreItems = async () => {
-    const { currentPage, movies, searchTerm } = this.state
+    const { currentPage, movies, loading} = this.state
     this.setState({ loading: true });
         try{
                 const res = await axios.get(`${API_URL}movie/popular?api_key=${API_KEY}&language=en-US&page=${currentPage + 1}`)
@@ -95,8 +99,8 @@ fetchItems = async () => {
 
 
  render() {
-     const { movies, heroImage, searchTerm } = this.state
-     console.log(searchTerm)
+     const { movies, heroImage, loading, currentMovie } = this.state
+     console.log(currentMovie)
  return (
     <div className="rmdb-home">
     {heroImage ?
@@ -115,21 +119,18 @@ fetchItems = async () => {
         loading={this.state.loading}
    >
     {_.map(movies, (element) => (
-        <MovieThumb
-                key={element.id}
-                clickable={true}
-                image={element.poster_path ? `${IMAGE_BASE_URL}${POSTER_SIZE}${element.poster_path}` : './images/no_image.jpg'}
-                movieId={element.id}
-                movieName={element.original_title}
-        />))}
+        <div key={element.id} className="rmdb-moviethumb">
+            <Link to={{ pathname: `/${element.id}`, movieName:`${element.original_title}`}}>
+                <img src={element.poster_path ? `${IMAGE_BASE_URL}${POSTER_SIZE}${element.poster_path}` : './images/no_image.jpg'} alt="moviethumb"/>
+            </Link>
+        </div>
+    ))}
     </FourColGrid>
-    {this.state.loading ? <Spinner /> : null}
+    {loading ? <Spinner /> : null}
      <LoadMoreBtn text="Load More" onClick={this.loadMoreItems} />
 
    </div>
-
     </div>
-    
     )
  }
 }

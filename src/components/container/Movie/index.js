@@ -15,7 +15,7 @@ class Movie extends Component {
         movie: null,
         actors: null,
         directors: [],
-        loading: false 
+        loading: false,
     }
         
     componentDidMount() {
